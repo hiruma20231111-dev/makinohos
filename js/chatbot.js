@@ -41,6 +41,15 @@
     '休診日はいつ？'
   ];
 
+  const TIP_HTML =
+    '<div class="chatbot-tip" data-chatbot-tip role="status" aria-live="polite">' +
+    '<button type="button" class="chatbot-tip__close" data-chatbot-tip-close aria-label="吹き出しを閉じる">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+    '</button>' +
+    '<span class="chatbot-tip__text">ご質問はお気軽に！</span>' +
+    '<span class="chatbot-tip__sub">受診や駐車場など何でもお答えします</span>' +
+    '</div>';
+
   const WIDGET_HTML =
     '<button type="button" class="chatbot-toggle" data-chatbot-toggle aria-label="チャットを開く" aria-expanded="false">' +
     '<svg class="chatbot-toggle__open-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>' +
@@ -79,8 +88,40 @@
       root.setAttribute('data-chatbot', '');
       document.body.appendChild(root);
     }
-    root.innerHTML = WIDGET_HTML;
+    root.innerHTML = TIP_HTML + WIDGET_HTML;
     initChatbot(root);
+    initTip(root);
+  }
+
+  function initTip(root) {
+    const tip = root.querySelector('[data-chatbot-tip]');
+    const closeBtn = root.querySelector('[data-chatbot-tip-close]');
+    const toggle = root.querySelector('[data-chatbot-toggle]');
+    if (!tip || !closeBtn || !toggle) return;
+
+    const KEY = 'makino-chatbot-tip-dismissed';
+    let dismissed = false;
+    try { dismissed = sessionStorage.getItem(KEY) === '1'; } catch (e) { /* ignore */ }
+
+    if (dismissed) return;
+
+    const hide = () => {
+      tip.classList.remove('is-visible');
+      try { sessionStorage.setItem(KEY, '1'); } catch (e) { /* ignore */ }
+    };
+
+    window.setTimeout(() => {
+      tip.classList.add('is-visible');
+    }, 1500);
+
+    window.setTimeout(hide, 12000);
+
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hide();
+    });
+
+    toggle.addEventListener('click', hide, { once: true });
   }
 
   function initChatbot(root) {
